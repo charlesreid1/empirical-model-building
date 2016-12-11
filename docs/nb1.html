@@ -183,35 +183,6 @@ div#notebook {
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[54]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
-<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s1">&#39;https://charlesreid1.com/img/empirical.png&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[54]:</div>
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<img src="https://charlesreid1.com/img/empirical.png" width="250"/>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="prompt input_prompt">
 </div>
@@ -224,7 +195,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[55]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
@@ -259,7 +230,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[56]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="n">inputs_labels</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x1&#39;</span> <span class="p">:</span> <span class="s1">&#39;Length of specimen (mm)&#39;</span><span class="p">,</span>
@@ -285,7 +256,7 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[56]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[2]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -353,7 +324,7 @@ $$
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[57]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="n">inputs_df</span><span class="p">[</span><span class="s1">&#39;average&#39;</span><span class="p">]</span>      <span class="o">=</span> <span class="n">inputs_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">z</span> <span class="p">:</span> <span class="p">(</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;high&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;low&#39;</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span> <span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -375,7 +346,7 @@ $$
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[57]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[3]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -458,7 +429,7 @@ $$
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[58]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">itertools</span>
@@ -474,7 +445,7 @@ $$
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[58]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[4]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -506,7 +477,7 @@ $$
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[61]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="n">results</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">674</span><span class="p">),</span>
@@ -531,7 +502,7 @@ $$
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[61]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[5]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -634,7 +605,7 @@ $$
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[62]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="n">real_experiment</span> <span class="o">=</span> <span class="n">results_df</span>
@@ -666,7 +637,7 @@ $$
 </div>
 </div>
 
-<div class="output_area"><div class="prompt output_prompt">Out[62]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[6]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -751,7 +722,7 @@ $$
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[63]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c1"># Compute the mean effect of the factor on the response,</span>
@@ -776,7 +747,7 @@ $$
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[63]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[7]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -817,7 +788,7 @@ $$
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[64]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">itertools</span>
@@ -845,7 +816,7 @@ $$
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[64]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[8]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -903,7 +874,7 @@ $$
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[65]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">itertools</span>
@@ -928,7 +899,7 @@ $$
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[65]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[9]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -966,7 +937,7 @@ $$<p>To determine these coefficients, we can obtain the effects we computed abov
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[79]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;yhat = &quot;</span>
@@ -1045,19 +1016,28 @@ $$
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Uncertainty-Quantfication:-Factory-Example">Uncertainty Quantfication: Factory Example<a class="anchor-link" href="#Uncertainty-Quantfication:-Factory-Example">&#182;</a></h2><p>For example, suppose that we're dealing with a machine on a factory floor, and we're measuring the system response $y$, which is a machine failure. Now, how do we know if a machine has failed? Perhaps we can't see its internals, and it still makes noise. We might find out that a machine has failed by seeing it emit smoke. But sometimes, machines will emit smoke before they fail, while other times, machines will only smoke after they've failed. We don't know exactly how many life cycles the machines went through, but we can quantify what we know. We can measure the mean $\overline{y}$ and variance $\sigma^2$ in a controlled setting, so that when a machine starts smoking, we have a probability distribution assigning probabilities to different times of failure (i.e., there is a 5% chance it failed more than 1 hour ago).</p>
 <p>Once we obtain the variance, or $\sigma^2$, we can obtain the value of $\sigma$, which represents the distribution of uncertainty. Assuming 2 sigma is acceptable (covers 95% of cases), we can add or subtract $\sigma$ from the estimate of parameters.</p>
-<h2 id="Uncertainty-Numbers">Uncertainty Numbers<a class="anchor-link" href="#Uncertainty-Numbers">&#182;</a></h2><p>To obtain an estimate of the uncertainty, the experimentalist will typically make several measurements at the center point, that is, where all parameter levels are 0. The more samples are taken at this condition, the better characterized the distribution of uncertainty becomes. These center point samples can be used to construct a Gaussian probability distribution function, which yeilds a variance, $\sigma^2 (or, to be proper, an estimate $s^2$ of the real variance $\sigma^2$). This parameter is key for quantifying uncertainty.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Uncertainty-Numbers">Uncertainty Numbers<a class="anchor-link" href="#Uncertainty-Numbers">&#182;</a></h2><p>To obtain an estimate of the uncertainty, the experimentalist will typically make several measurements at the center point, that is, where all parameter levels are 0. The more samples are taken at this condition, the better characterized the distribution of uncertainty becomes. These center point samples can be used to construct a Gaussian probability distribution function, which yeilds a variance, $\sigma^2$ (or, to be proper, an estimate $s^2$ of the real variance $\sigma^2$). This parameter is key for quantifying uncertainty.</p>
 <h2 id="Using-Uncertainty-Measurements">Using Uncertainty Measurements<a class="anchor-link" href="#Using-Uncertainty-Measurements">&#182;</a></h2><p>Suppose we measure $s^2 = 0.0050$. Now what?</p>
 <p>Now we can obtain the variance of all measurements, and the variance in the effects that we computed above. These are computed via:</p>
 $$
-Var(mean) = \dfrac{\sigma^2}{2^k} \\
-Var(effect) = \dfrac{4 \sigma^2}{2^k}
+Var_{mean} = V(\overline{y}) = \dfrac{\sigma^2}{2^k} \\
+Var_{effect} = \dfrac{4 \sigma^2}{2^k}
 $$
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[75]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="n">sigmasquared</span> <span class="o">=</span> <span class="mf">0.0050</span>
@@ -1095,8 +1075,8 @@ Variance in effects: 0.002500
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Alternatively, if the responses $y$ are actually averages of a given number $r$ of $y$-observations, $\overline{y}$, then the variance will shrink:</p>
 $$
-Var(mean) = \dfrac{\sigma^2}{r 2^k} \\
-Var(effect) = \dfrac{4 \sigma^2}{r 2^k}
+Var_{mean} = \dfrac{\sigma^2}{r 2^k} \\
+Var_{effect} = \dfrac{4 \sigma^2}{r 2^k}
 $$<p>The variance gives us an estimate of sigma squared, and if we have sigma squared we can obtain sigma. Sigma is the quantity that represents the range of response values that captures 1 sigma, or 66%, of the probable values of $y$ with $\hat{y}$. Adding a plus or minus sigma means we are capturing 2 sigma, or 95%, of the probable values of $y$.</p>
 <p>Taking the square root of the variance gives $\sigma$:</p>
 
@@ -1105,7 +1085,7 @@ $$<p>The variance gives us an estimate of sigma squared, and if we have sigma sq
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[76]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Vmean</span><span class="p">)</span>
@@ -1153,7 +1133,7 @@ $$<p>where $\sigma_{mean} = \sqrt{Var(mean)}$.</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[80]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="n">unc_a_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Vmean</span><span class="p">)</span>
