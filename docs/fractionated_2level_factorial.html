@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>Factorial - Two-Level Three-Factor Design</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>Fractionating Two-Level Factorials (Chapter 5)</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -11778,64 +11778,9 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="A-Two-Level,-Three-Factor-Full-Factorial-Design">A Two-Level, Three-Factor Full Factorial Design<a class="anchor-link" href="#A-Two-Level,-Three-Factor-Full-Factorial-Design">&#182;</a></h1><p><br />
-<br />
-<br /></p>
-<h3 id="Table-of-Contents">Table of Contents<a class="anchor-link" href="#Table-of-Contents">&#182;</a></h3><ul>
-<li><a href="#intro">Introduction</a></li>
-<li>Factorial Experimental Design:<ul>
-<li><a href="#twolevelfactorial">Two-Level Three-Factor Full Factorial Design</a></li>
-<li><a href="#designexperiment">Design of the Experiment</a></li>
-<li><a href="#inputs_responses">Inputs and Responses</a></li>
-</ul>
-</li>
-<li>Effects and Interactions:<ul>
-<li><a href="#computing_main_effects">Computing Main Effects</a></li>
-<li><a href="#analyzing_main_effects">Analyzing Main Effects</a></li>
-<li><a href="#twowayinteractions">Two Way Interactions</a></li>
-<li><a href="#analyzing_twowayinteractions">Analyzing Two Way Interactions</a></li>
-<li><a href="#threewayinteractions">Three Way Interactions</a></li>
-<li><a href="#analyzing_threewayinteractions">Analyzing Three Way Interactions</a></li>
-<li><a href="#fitting_responsesurface">Fitting a Polynomial Response Surface</a></li>
-</ul>
-</li>
-<li>Uncertainty:<ul>
-<li><a href="#uncertainty">The Impact of Uncertainty</a></li>
-<li><a href="#uncertainty_example">Uncertainty Quantification: A Factory Example</a></li>
-<li><a href="#uncertainty_numbers">Uncertainty Numbers</a></li>
-<li><a href="#uncertainty_measurements">Uncertainty Measurements</a></li>
-<li><a href="#uncertainty_accounting">Accounting for Uncertainty in the Model</a></li>
-</ul>
-</li>
-<li><a href="#discussion">Discussion</a></li>
-<li><a href="#conclusion">Conclusion</a></li>
-</ul>
-<p><br />
-<br />
-<br /></p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="intro"></a></p>
-<h2 id="Introduction">Introduction<a class="anchor-link" href="#Introduction">&#182;</a></h2><p>As with other notebooks in this repository, this notebook follows, more or less closely, content from Box and Draper's <em>Empirical Model-Building and Response Surfaces</em> (Wiley, 1984). This content is covered by Chapter 4 of Box and Draper.</p>
-<p>In this notebook, we'll carry out an anaylsis of a full factorial design, and show how we can obtain inforomation about a system and its responses, and a quantifiable range of certainty about those values. This is the fundamental idea behind empirical model-building and allows us to construct cheap and simple models to represent complex, nonlinear systems.</p>
-<p>Once we've nailed this down for simple models and small numbers of inputs and responses, we can expand on it, use more complex models, and link this material with machine learning algorithms.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>We'll start by importing numpy for numerical analysis, and pandas for convenient data containers.</p>
+<h1 id="Fractionating-$2^k$-Factorial-Designs">Fractionating $2^k$ Factorial Designs<a class="anchor-link" href="#Fractionating-$2^k$-Factorial-Designs">&#182;</a></h1><h2 id="Motivation">Motivation<a class="anchor-link" href="#Motivation">&#182;</a></h2><p>The prior section showed an example of what an experimental design might like look like for 6 variables. However, this resulted in a $2^6 = 64$ experiment design campaign. This is potentially a major issue - if my experiments take 6 hours, and have to be staggered over working hours on weekdays, you're looking at almost 90 days turnaround time, assuming each experiment is carried out flawlessly. This is simply not a realistic view of experimentation.</p>
+<p>In addition, we saw that a five-coefficient model captured nearly as much detail as a 64-coefficient model. By reducing the number of input variables we looked at, we turned certain experiments into replicates (because the only thing changed bewteen them were insignificant variables or variable combinations).</p>
+<p>But we can halve or quarter our effort, and substantially improve our effectiveness in the lab, by carefully selecting experiments at each stage of the experiment to reveal a maximum amount of information, and avoiding as much as possible these kinds of duplicate experiments, through a fractional factorial design.</p>
 
 </div>
 </div>
@@ -11846,8 +11791,13 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">numpy.random</span> <span class="k">import</span> <span class="n">rand</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">pylab</span>
+
+<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">stats</span>
+<span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
 </pre></div>
 
 </div>
@@ -11860,18 +11810,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Box and Draper cover different experimental design methods in the book, but begin with the simplest type of factorial design in Chapter 4: a full factorial design with two levels. A factorial experimental design is appropriate for exploratory stages, when the effects of variables or their interactions on a system response are poorly understood or not quantifiable.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="twolevelfactorial"></a></p>
-<h2 id="Two-Level-Full-Factorial-Design">Two-Level Full Factorial Design<a class="anchor-link" href="#Two-Level-Full-Factorial-Design">&#182;</a></h2><p>The analysis begins with a two-level, three-variable experimental design - also written $2^3$, with $n=2$ levels for each factor, $k=3$ different factors. We start by encoding each fo the three variables to something generic: $(x_1,x_2,x_3)$. A dataframe with input variable values is then populated.</p>
+<p>After re-casting the problem in a general form, we begin with the experimental design matrix. If we were to construct the full factorial for our $2^6$ factorial example, we would again have 64 rows in our experimental design matrix dataframe, corresponding to 64 experiments to run.</p>
 
 </div>
 </div>
@@ -11881,19 +11820,10 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">inputs_labels</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x1&#39;</span> <span class="p">:</span> <span class="s1">&#39;Length of specimen (mm)&#39;</span><span class="p">,</span>
-                 <span class="s1">&#39;x2&#39;</span> <span class="p">:</span> <span class="s1">&#39;Amplitude of load cycle (mm)&#39;</span><span class="p">,</span>
-                 <span class="s1">&#39;x3&#39;</span> <span class="p">:</span> <span class="s1">&#39;Load (g)&#39;</span><span class="p">}</span>
-
-<span class="n">dat</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span><span class="mi">250</span><span class="p">,</span><span class="mi">350</span><span class="p">),</span>
-       <span class="p">(</span><span class="s1">&#39;x2&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span>
-       <span class="p">(</span><span class="s1">&#39;x3&#39;</span><span class="p">,</span><span class="mi">40</span><span class="p">,</span><span class="mi">50</span><span class="p">)]</span>
-
-<span class="n">inputs_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">,</span><span class="s1">&#39;low&#39;</span><span class="p">,</span><span class="s1">&#39;high&#39;</span><span class="p">])</span>
-<span class="n">inputs_df</span> <span class="o">=</span> <span class="n">inputs_df</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;index&#39;</span><span class="p">])</span>
-<span class="n">inputs_df</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">z</span> <span class="p">:</span> <span class="n">inputs_labels</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="p">)</span>
-
-<span class="n">inputs_df</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">column_labs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;x</span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
+<span class="n">encoded_inputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
+<span class="n">doe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">encoded_inputs</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="n">column_labs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">doe</span><span class="p">))</span>
 </pre></div>
 
 </div>
@@ -11905,50 +11835,12 @@ div#notebook {
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[2]:</div>
+<div class="prompt"></div>
 
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>low</th>
-      <th>high</th>
-      <th>label</th>
-    </tr>
-    <tr>
-      <th>index</th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>x1</th>
-      <td>250</td>
-      <td>350</td>
-      <td>Length of specimen (mm)</td>
-    </tr>
-    <tr>
-      <th>x2</th>
-      <td>8</td>
-      <td>10</td>
-      <td>Amplitude of load cycle (mm)</td>
-    </tr>
-    <tr>
-      <th>x3</th>
-      <td>40</td>
-      <td>50</td>
-      <td>Load (g)</td>
-    </tr>
-  </tbody>
-</table>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>64
+</pre>
 </div>
-</div>
-
 </div>
 
 </div>
@@ -11960,15 +11852,22 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Next, we encode the variable values. For an arbitrary variable value $\phi_1$, the value of the variable can be coded to be between -1 and 1 according to the formula:</p>
+<h2 id="Design-Matrix">Design Matrix<a class="anchor-link" href="#Design-Matrix">&#182;</a></h2><p>Let's talk a bit more about the design matrix. Each column of the design matrix corresponds to a unique coded input variable value $(-1,+1)$. But each experiment also has a corresponding coded value for each two-variable interaction $x_i,x_j$, and for each three-variable interaction $x_k,x_m,x_n$, and so on.</p>
+<p>These interactions are simply the product of each coded variable value. For example, if</p>
 $$
-x_i = \dfrac{ \phi_i - \mbox{avg }(\phi) }{ \mbox{span }(\phi) }
-$$<p>where the average and the span of the variable $\phi_i$ are defined as:</p>
+x_1 = -1 \\
+x_2 = +1 \\
+x_3 = +1
+$$<p>then two-variable interaction effects can be computed as:</p>
 $$
-\mbox{avg }(\phi) = \left( \dfrac{ \phi_{\text{high}} + \phi_{\text{low}} }{2} \right)
-$$$$
-\mbox{span }(\phi) = \left( \dfrac{ \phi_{\text{high}} - \phi_{\text{low}} }{2} \right)
+x_{12} = -1 \times +1 = -1 \\
+x_{13} = -1 \times +1 = -1 \\
+x_{23} = +1 \times +1 = +1 \\
+$$<p>and three-variable interaction effects are:</p>
 $$
+x_{123} = -1 \times -1 \times +1 = +1
+$$<p>Now we can add new columns to our experimental design matrix dataframe, representing coded values for higher-order interaction effects:</p>
+
 </div>
 </div>
 </div>
@@ -11977,15 +11876,11 @@ $$
 <div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">inputs_df</span><span class="p">[</span><span class="s1">&#39;average&#39;</span><span class="p">]</span>      <span class="o">=</span> <span class="n">inputs_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">z</span> <span class="p">:</span> <span class="p">(</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;high&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;low&#39;</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span> <span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">inputs_df</span><span class="p">[</span><span class="s1">&#39;span&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="n">inputs_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">z</span> <span class="p">:</span> <span class="p">(</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;high&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;low&#39;</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span> <span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">doe</span><span class="p">[</span><span class="s1">&#39;x1-x2-x3-x4&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">doe</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">z</span> <span class="p">:</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;x1&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;x2&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;x3&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;x4&#39;</span><span class="p">]</span> <span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">doe</span><span class="p">[</span><span class="s1">&#39;x4-x5-x6&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="n">doe</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">z</span> <span class="p">:</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;x4&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;x5&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;x6&#39;</span><span class="p">]</span> <span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">doe</span><span class="p">[</span><span class="s1">&#39;x2-x4-x5&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="n">doe</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">z</span> <span class="p">:</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;x2&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;x4&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;x5&#39;</span><span class="p">]</span> <span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="n">inputs_df</span><span class="p">[</span><span class="s1">&#39;encoded_low&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">inputs_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">z</span> <span class="p">:</span> <span class="p">(</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;low&#39;</span><span class="p">]</span>  <span class="o">-</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;average&#39;</span><span class="p">]</span> <span class="p">)</span><span class="o">/</span><span class="p">(</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;span&#39;</span><span class="p">]</span> <span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">inputs_df</span><span class="p">[</span><span class="s1">&#39;encoded_high&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">z</span> <span class="p">:</span> <span class="p">(</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;high&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;average&#39;</span><span class="p">]</span> <span class="p">)</span><span class="o">/</span><span class="p">(</span> <span class="n">z</span><span class="p">[</span><span class="s1">&#39;span&#39;</span><span class="p">]</span> <span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="n">inputs_df</span> <span class="o">=</span> <span class="n">inputs_df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;average&#39;</span><span class="p">,</span><span class="s1">&#39;span&#39;</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="n">inputs_df</span>
+<span class="n">doe</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
 </pre></div>
 
 </div>
@@ -12006,45 +11901,137 @@ $$
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>low</th>
-      <th>high</th>
-      <th>label</th>
-      <th>encoded_low</th>
-      <th>encoded_high</th>
-    </tr>
-    <tr>
-      <th>index</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
+      <th>x1</th>
+      <th>x2</th>
+      <th>x3</th>
+      <th>x4</th>
+      <th>x5</th>
+      <th>x6</th>
+      <th>x1-x2-x3-x4</th>
+      <th>x4-x5-x6</th>
+      <th>x2-x4-x5</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>x1</th>
-      <td>250</td>
-      <td>350</td>
-      <td>Length of specimen (mm)</td>
-      <td>-1.0</td>
-      <td>1.0</td>
+      <th>0</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
     </tr>
     <tr>
-      <th>x2</th>
-      <td>8</td>
-      <td>10</td>
-      <td>Amplitude of load cycle (mm)</td>
-      <td>-1.0</td>
-      <td>1.0</td>
+      <th>1</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
     </tr>
     <tr>
-      <th>x3</th>
-      <td>40</td>
-      <td>50</td>
-      <td>Load (g)</td>
-      <td>-1.0</td>
-      <td>1.0</td>
+      <th>2</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
     </tr>
   </tbody>
 </table>
@@ -12062,71 +12049,28 @@ $$
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="designexperiment"></a></p>
-<h2 id="Design-of-the-Experiment">Design of the Experiment<a class="anchor-link" href="#Design-of-the-Experiment">&#182;</a></h2><p>While everything preceding this point is important to state, to make sure we're being consistent and clear about our problem statement and assumptions, nothing preceding this point is particularly important to understanding how experimental design works. This is simply illustrating the process of transforming one's problem from a problem-specific problem space to a more general problem space.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="inputs_responses"></a></p>
-<h2 id="Inputs-and-Responses">Inputs and Responses<a class="anchor-link" href="#Inputs-and-Responses">&#182;</a></h2><p>Box and Draper present the results (observed outcomes) of a $2^3$ factorial experiment. The $2^3$ comes from the fact that there are 2 levels for each variable (-1 and 1) and three variables (x1, x2, and x3). The observed, or output, variable is the number of cycles to failure for a particular piece of machinery; this variable is more conveniently cast as a logarithm, as it can be a very large number.</p>
-<p>Each observation data point consists of three input variable values and an output variable value, $(x_1, x_2, x_3, y)$, and can be thought of as a point in 3D space $(x_1,x_2,x_3)$ with an associated point value of $y$. Alternatively, this might be thought of as a point in 4D space (the first three dimensions are the location in 3D space where the point will appear, and the $y$ value is when it will actually appear).</p>
-<p>The input variable values consist of all possible input value combinations, which we can produce using the itertools module:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">itertools</span>
-<span class="n">encoded_inputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
-<span class="n">encoded_inputs</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[4]:</div>
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>[(-1, -1, -1),
- (-1, -1, 1),
- (-1, 1, -1),
- (-1, 1, 1),
- (1, -1, -1),
- (1, -1, 1),
- (1, 1, -1),
- (1, 1, 1)]</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Now we implement the observed outcomes; as we mentioned, these numbers are large (hundreds or thousands of cycles), and are more conveniently scaled by taking $\log_{10}()$ (which will rescale them to be integers between 1 and 4).</p>
+<p>The multi-variable columns can be used to fractionate our design.</p>
+<h2 id="Half-Factorial">Half Factorial<a class="anchor-link" href="#Half-Factorial">&#182;</a></h2><p>Suppose we pick a high-order interaction effect at random - e.g., $x_1 \times x_2 \times x_3 \times x_4$ - and assume it will be unimportant. Our assumption allows us to cut out any experiments that are intended to give us information about the effect of $x_1 x_2 x_3 x_4$.</p>
+<p>For any two groups of experiments, if one group has</p>
+$$x_1 x_2 x_3 x_4 = +1$$<p></p>
+<p>and the other group has</p>
+$$x_1 x_2 x_3 x_4 = -1$$<p>then based on our assumption that that interaction effect will be unimportant, one of those two groups can be thrown out.</p>
+<p>Fortuitously, the first time a variable is eliminated, no matter which variable it is, the number of experiments is cut in half. Further eliminations of variables continue to cut the number of experiments in half. So a six-factor experimental design could be whittled down as follows:</p>
+<p>Six-factor, two-level experiment design:</p>
+<ul>
+<li>$n=2$, $k=6$, $2^6$ experimental design</li>
+<li>Full factorial: $2^6 = 64$ experiments</li>
+<li>Half factorial: $2^{6-1} = 32$ experiments</li>
+<li>$\frac{1}{4}$ Fractional factorial: $2^{6-2} = 16$ experiments</li>
+<li>$\frac{1}{8}$ Fractional factorial: $2^{6-3} = 8$ experiments</li>
+<li>$\frac{1}{16}$ Fractional factorial: $2^{6-4} = 4$ experiments</li>
+</ul>
+<p>In general, for an $n^k$ experiment design ($n$ factor, $k$ level), a $\dfrac{1}{2^p}$ fractional factorial can be defined as:</p>
+<ul>
+<li>$\dfrac{1}{2^p}$ Fractional factorial: $2^{n-p}$ experiments</li>
+</ul>
+<p>Note that as the fractional factorial gets narrower, and the experiments get fewer, the number of aliased interaction effects gets larger, until not even interaction effects can be distinguished, but only main effects. (Screening designs, such as Plackett-Burman designs, are based on this idea of highly-fractionated experiment design; we'll get into that later.)</p>
+<p>For now, let's look at the half factorial: 32 experiments, with the reduction in varaibles coming from aliasing the interaction effect $x_1 x_2 x_3 x_4$:</p>
 
 </div>
 </div>
@@ -12136,148 +12080,7 @@ $$
 <div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">674</span><span class="p">),</span>
-           <span class="p">(</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3636</span><span class="p">),</span>
-           <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">170</span><span class="p">),</span>
-           <span class="p">(</span> <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1140</span><span class="p">),</span>
-           <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="mi">292</span><span class="p">),</span>
-           <span class="p">(</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span>
-           <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
-           <span class="p">(</span>  <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="mi">360</span><span class="p">)]</span>
-
-<span class="n">results_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span><span class="s1">&#39;x2&#39;</span><span class="p">,</span><span class="s1">&#39;x3&#39;</span><span class="p">,</span><span class="s1">&#39;y&#39;</span><span class="p">])</span>
-<span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;logy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">z</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="p">)</span>
-<span class="n">results_df</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[5]:</div>
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>x1</th>
-      <th>x2</th>
-      <th>x3</th>
-      <th>y</th>
-      <th>logy</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>-1</td>
-      <td>-1</td>
-      <td>-1</td>
-      <td>674</td>
-      <td>2.828660</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1</td>
-      <td>-1</td>
-      <td>-1</td>
-      <td>3636</td>
-      <td>3.560624</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>-1</td>
-      <td>1</td>
-      <td>-1</td>
-      <td>170</td>
-      <td>2.230449</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>1</td>
-      <td>1</td>
-      <td>-1</td>
-      <td>1140</td>
-      <td>3.056905</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>-1</td>
-      <td>-1</td>
-      <td>1</td>
-      <td>292</td>
-      <td>2.465383</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>1</td>
-      <td>-1</td>
-      <td>1</td>
-      <td>2000</td>
-      <td>3.301030</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>-1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>90</td>
-      <td>1.954243</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>360</td>
-      <td>2.556303</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>The variable <code>inputs_df</code> contains all input variables for the expeirment design, and <code>results_df</code> contains the inputs and responses for the experiment design; these variables are the encoded levels. To obtain the original, unscaled values, which allows us to check what experiments must be run, we can always convert the dataframe back to its originals by defining a function to un-apply the scaling equation. This is as simple as finding</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">real_experiment</span> <span class="o">=</span> <span class="n">results_df</span>
-
-<span class="n">var_labels</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span><span class="s1">&#39;x2&#39;</span><span class="p">,</span><span class="s1">&#39;x3&#39;</span><span class="p">]:</span>
-    <span class="n">var_label</span> <span class="o">=</span> <span class="n">inputs_df</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
-    <span class="n">var_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_label</span><span class="p">)</span>
-    <span class="n">real_experiment</span><span class="p">[</span><span class="n">var_label</span><span class="p">]</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-        <span class="k">lambda</span> <span class="n">z</span> <span class="p">:</span> <span class="n">inputs_df</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s1">&#39;low&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">z</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">0</span> <span class="k">else</span> <span class="n">inputs_df</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s1">&#39;high&#39;</span><span class="p">]</span> <span class="p">,</span> 
-        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The values of each real variable in the experiment:&quot;</span><span class="p">)</span>
-<span class="n">real_experiment</span><span class="p">[</span><span class="n">var_labels</span><span class="p">]</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span> <span class="n">doe</span><span class="p">[</span><span class="n">doe</span><span class="p">[</span><span class="s1">&#39;x1-x2-x3-x4&#39;</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span> <span class="p">))</span>
 </pre></div>
 
 </div>
@@ -12292,80 +12095,9 @@ $$
 <div class="prompt"></div>
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>The values of each real variable in the experiment:
+<pre>32
 </pre>
 </div>
-</div>
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[7]:</div>
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Length of specimen (mm)</th>
-      <th>Amplitude of load cycle (mm)</th>
-      <th>Load (g)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>250</td>
-      <td>8</td>
-      <td>40</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>350</td>
-      <td>8</td>
-      <td>40</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>250</td>
-      <td>10</td>
-      <td>40</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>350</td>
-      <td>10</td>
-      <td>40</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>250</td>
-      <td>8</td>
-      <td>50</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>350</td>
-      <td>8</td>
-      <td>50</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>250</td>
-      <td>10</td>
-      <td>50</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>350</td>
-      <td>10</td>
-      <td>50</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
 </div>
 
 </div>
@@ -12377,29 +12109,275 @@ $$
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="computing_main_effects"></a></p>
-<h2 id="Computing-Main-Effects">Computing Main Effects<a class="anchor-link" href="#Computing-Main-Effects">&#182;</a></h2><p>Now we compute the main effects of each variable using the results of the experimental design. We'll use some shorthand Pandas functions to compute these averages: the groupby function, which groups rows of a dataframe according to some condition (in this case, the value of our variable of interest $x_i$).</p>
+<h2 id="Costs-and-Benefits">Costs and Benefits<a class="anchor-link" href="#Costs-and-Benefits">&#182;</a></h2><p>The benefits are obvious - we've halved the number of experiments our experiment design requires. But at what cost?</p>
+<p>The first 32 experiments, where $x_1 x_2 x_3 x_4 = +1$, give us information at a positive level of that input variable combination. To get information at a negative level of that input variable combination (i.e., $x_1 x_2 x_3 x_4 = -1$), we need 32 additional experiments.</p>
+<p>Our assumption is that changing $x_1 x_2 x_3 x_4$ from high to low will have no effect on the observable $y$.</p>
+<p>This also modifies the information we get about higher-order interaction effects. For example, we've assumed:</p>
+$$
+x_1 x_2 x_3 x_4 = +1
+$$<p>We can use this identity to figure out what information we're missing when we cut out the 32 experiments. Our assumption about the fourth-order interaction also changes fifth- and sixth-order interactions:</p>
+$$
+(x_1 x_2 x_3 x_4) = (+1) \\
+(x_1 x_2 x_3 x_4) x_5 = (+1) x_5 \\
+x_1 x_2 x_3 x_4 x_5 = x_5
+$$<p>meaning the fifth-order interaction effect $x_1 x_2 x_3 x_4 x_5$ has been aliased with the first-order main effect $x_5$. This is a safe assumption since it is extremely unlikely that a fifth-order interaction effect could be confounded with a first-order main effect. We can derive other relations, using the fact that any factor squared is equivalent to $(+1)$, so that:</p>
+$$
+(x_1 x_2 x_3 x_4) = +1 \\
+(x_1 x_2 x_3 x_4) x_1 = (+1) x_1 \\
+(x_1^2 x_2 x_3 x_4) = (+1) x_1 \\
+x_2 x_3 x_4 = x_1 
+$$
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<hr>
+<p>The sequence of variables selected as the interaction effect to be used as the experimental design basis is called the generator, and is denoted $I$:</p>
+$$
+I = x_1 x_2 x_3 x_4
+$$<p>and we set $I=+1$ or $I=-1$.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Defining multiple DOE matrices:</span>
+
+<span class="c1"># DOE 1 based on identity I = x1 x2 x3 x4 </span>
+<span class="n">doe1</span> <span class="o">=</span> <span class="n">doe</span><span class="p">[</span><span class="n">doe</span><span class="p">[</span><span class="s1">&#39;x1-x2-x3-x4&#39;</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># DOE 2 based on identity I = x4 x5 x6</span>
+<span class="n">doe2</span> <span class="o">=</span> <span class="n">doe</span><span class="p">[</span><span class="n">doe</span><span class="p">[</span><span class="s1">&#39;x4-x5-x6&#39;</span><span class="p">]</span><span class="o">==-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># DOE 3 based on identity I = x2 x4 x5</span>
+<span class="n">doe3</span> <span class="o">=</span> <span class="n">doe</span><span class="p">[</span><span class="n">doe</span><span class="p">[</span><span class="s1">&#39;x2-x4-x5&#39;</span><span class="p">]</span><span class="o">==-</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">doe1</span><span class="p">[</span><span class="n">column_labs</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[7]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>12</th>
+      <th>13</th>
+      <th>14</th>
+      <th>15</th>
+      <th>20</th>
+      <th>21</th>
+      <th>...</th>
+      <th>42</th>
+      <th>43</th>
+      <th>48</th>
+      <th>49</th>
+      <th>50</th>
+      <th>51</th>
+      <th>60</th>
+      <th>61</th>
+      <th>62</th>
+      <th>63</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>x1</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x2</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>...</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x3</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x4</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>...</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x5</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x6</th>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>...</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>6 rows × 32 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
 <div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Compute the mean effect of the factor on the response,</span>
-<span class="c1"># conditioned on each variable</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span><span class="s1">&#39;x2&#39;</span><span class="p">,</span><span class="s1">&#39;x3&#39;</span><span class="p">]</span>
-
-<span class="n">main_effects</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
-    
-    <span class="n">effects</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">key</span><span class="p">)[</span><span class="s1">&#39;logy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-
-    <span class="n">main_effects</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span> <span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">effects</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]]</span> <span class="p">)</span>
-
-<span class="n">main_effects</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">doe2</span><span class="p">[</span><span class="n">column_labs</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
 </pre></div>
 
 </div>
@@ -12414,11 +12392,184 @@ $$
 <div class="prompt output_prompt">Out[8]:</div>
 
 
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{&#39;x1&#39;: 0.7490317608790833,
- &#39;x2&#39;: -0.58944945881907218,
- &#39;x3&#39;: -0.34991992162024621}</pre>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>3</th>
+      <th>5</th>
+      <th>6</th>
+      <th>8</th>
+      <th>11</th>
+      <th>13</th>
+      <th>14</th>
+      <th>16</th>
+      <th>19</th>
+      <th>...</th>
+      <th>45</th>
+      <th>46</th>
+      <th>48</th>
+      <th>51</th>
+      <th>53</th>
+      <th>54</th>
+      <th>56</th>
+      <th>59</th>
+      <th>61</th>
+      <th>62</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>x1</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x2</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>...</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x3</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x4</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x5</th>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>...</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x6</th>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+    </tr>
+  </tbody>
+</table>
+<p>6 rows × 32 columns</p>
+</div>
 </div>
 
 </div>
@@ -12426,53 +12577,13 @@ $$
 </div>
 </div>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="analyzing_main_effects"></a></p>
-<h2 id="Analyzing-Main-Effects">Analyzing Main Effects<a class="anchor-link" href="#Analyzing-Main-Effects">&#182;</a></h2><p>The main effect of a given variable (as defined by Yates 1937) is the average difference in the level of response as the input variable moves from the low to the high level. If there are other variables, the change in the level of response is averaged over all combinations of the other variables.</p>
-<p>Now that we've computed the main effects, we can analyze the results to glean some meaningful information about our system. The first variable <code>x1</code> has a positive effect of 0.74 - this indicates that when <code>x1</code> goes from its low level to its high level, it increases the value of the response (the lieftime of the equipment). This means <code>x1</code> should be increased, if we want to make our equipment last longer. Furthermore, this effect was the largest, meaning it's the variable we should consider changing first.</p>
-<p>This might be the case if, for example, changing the value of the input variables were capital-intensive. A company might decide that they can only afford to change one variable, <code>x1</code>, <code>x2</code>, or <code>x3</code>. If this were the case, increasing <code>x1</code> would be the way to go.</p>
-<p>In contrast, increasing the variables <code>x2</code> and <code>x3</code> will result in a decrease in the lifespan of our equipment (makes the response smaller), since these have a negative main effect. These variables should be kept at their lower levels, or decreased, to increase the lifespan of the equipment.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="twowayinteractions"></a></p>
-<h2 id="Two-Way-Interactions">Two-Way Interactions<a class="anchor-link" href="#Two-Way-Interactions">&#182;</a></h2><p>In addition to main effects, a factorial design will also reveal interaction effects between variables - both two-way interactions and three-way interactions. We can use the <code>itertools</code> library to compute the interaction effects using the results from the factorial design.</p>
-<p>We'll use the Pandas groupby function again, grouping by two variables this time.</p>
-
-</div>
-</div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">itertools</span>
-
-<span class="n">twoway_labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-
-<span class="n">twoway_effects</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">twoway_labels</span><span class="p">:</span>
-    
-    <span class="n">effects</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">key</span><span class="p">)[</span><span class="s1">&#39;logy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-    
-    <span class="n">twoway_effects</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span> <span class="n">i</span><span class="o">*</span><span class="n">j</span><span class="o">*</span><span class="n">effects</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">])</span>
-
-    <span class="c1"># This somewhat hairy one-liner takes the mean of a set of sum-differences</span>
-    <span class="c1">#twoway_effects[key] = mean([  sum([ i*effects[i][j] for i in [-1,1] ]) for j in [-1,1]  ])</span>
-
-<span class="n">twoway_effects</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">doe3</span><span class="p">[</span><span class="n">column_labs</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
 </pre></div>
 
 </div>
@@ -12487,11 +12598,184 @@ $$
 <div class="prompt output_prompt">Out[9]:</div>
 
 
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{(&#39;x1&#39;, &#39;x2&#39;): -0.034773800236002961,
- (&#39;x1&#39;, &#39;x3&#39;): -0.030178193107320839,
- (&#39;x2&#39;, &#39;x3&#39;): -0.038484459633821189}</pre>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>14</th>
+      <th>15</th>
+      <th>18</th>
+      <th>19</th>
+      <th>...</th>
+      <th>46</th>
+      <th>47</th>
+      <th>50</th>
+      <th>51</th>
+      <th>52</th>
+      <th>53</th>
+      <th>58</th>
+      <th>59</th>
+      <th>60</th>
+      <th>61</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>x1</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x2</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>...</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x3</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x4</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x5</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+    </tr>
+    <tr>
+      <th>x6</th>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>...</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>6 rows × 32 columns</p>
+</div>
 </div>
 
 </div>
@@ -12505,16 +12789,7 @@ $$
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This one-liner is a bit hairy:</p>
-
-<pre><code>twoway_effects[key] = sum([ i*j*effects[i][j]/2 for i in [-1,1] for j in [-1,1] ])</code></pre>
-<p>What this does is, computes the two-way variable effect with a multi-step calculation, but does it with a list comprehension. First, let's just look at this part:</p>
-
-<pre><code>i*j*effects[i][j]/2 for i in [-1,1] for j in [-1,1]</code></pre>
-<p>This computes the prefix <code>i*j</code>, which determines if the interaction effect <code>effects[i][j]</code> is positive or negative. We're also looping over one additional dimension; we multiply by 1/2 for each additional dimension we loop over. These are all summed up to yield the final interaction effect for every combination of the input variables.</p>
-<p>If we were computing three-way interaction effects, we would have a similar-looking one-liner, but with <code>i</code>, <code>j</code>, and <code>k</code>:</p>
-
-<pre><code>i*j*k*effects[i][j][k]/4 for i in [-1,1] for j in [-1,1] for k in [-1,1]</code></pre>
+<p>Each of the dataframes above represents a different fractional factorial design.</p>
 
 </div>
 </div>
@@ -12524,21 +12799,13 @@ $$
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="analyzing_twowayinteractions"></a></p>
-<h2 id="Analyzing-Two-Way-Interactions">Analyzing Two-Way Interactions<a class="anchor-link" href="#Analyzing-Two-Way-Interactions">&#182;</a></h2><p>As with main effects, we can analyze the results of the interaction effects analysis to come to some useful conclusions about our physical system. A two-way interaction is a measure of how the main effect of one variable changes as the level of another variable changes. A negative two-way interaction between $x_2$ and $x_3$ means that if we increase $x_3$, the main effect of $x_2$ will be to decrase the response; or, alternatively, if we increase $x_2$, the main effect of $x_3$ will be to decrease the response.</p>
-<p>In this case, we see that the $x_2-x_3$ interaction effect is the largest, and it is negative. This means that if we decrease both $x_2$ and $x_3$, it will increase our response - make the equipment last longer. In fact, all of the variable interactions have the same result - increasing both variables will decrease the lifetime of the equipment - which indicates that any gains in equipment lifetime accomplished by increasing $x_1$ will be nullified by increases to $x_2$ or $x_3$, since these variables will interact.</p>
-<p>Once again, if we are limited in the changes that we can actually make to the equipment and input levels, we would want to keep $x_2$ and $x_3$ both at their low levels to keep the response variable value as high as possible.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="threewayinteractions"></a></p>
-<h2 id="Three-Way-Interactions">Three-Way Interactions<a class="anchor-link" href="#Three-Way-Interactions">&#182;</a></h2><p>Now let's comptue the three-way effects (in this case, we can only have one three-way effect, since we only have three variables). We'll start by using the <code>itertools</code> library again, to create a tuple listing the three variables whose interactions we're computing. Then we'll use the Pandas <code>groupby()</code> feature to partition each output according to its inputs, and use it to compute the three-way effects.</p>
+<h2 id="$\frac{1}{4}$-Fractional-Designs">$\frac{1}{4}$ Fractional Designs<a class="anchor-link" href="#$\frac{1}{4}$-Fractional-Designs">&#182;</a></h2><p>To further reduce the number of experiments, two identities can be used. The number of experiments is cut in half for each identity. We already have one identity,</p>
+$$
+I = x_1 x_2 x_3 x_4 = 1
+$$<p>now let's define another one:</p>
+$$
+I_2 = x_4 x_5 x_6 = 1
+$$<p>Our resulting factorial matrix can be reduced the same way. In Python, we use the <code>logical_and</code> function to ensure our two conditions are satisfied.</p>
 
 </div>
 </div>
@@ -12548,18 +12815,9 @@ $$
 <div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">itertools</span>
-
-<span class="n">threeway_labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-
-<span class="n">threeway_effects</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">threeway_labels</span><span class="p">:</span>
-    
-    <span class="n">effects</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">key</span><span class="p">)[</span><span class="s1">&#39;logy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-    
-    <span class="n">threeway_effects</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span> <span class="n">i</span><span class="o">*</span><span class="n">j</span><span class="o">*</span><span class="n">k</span><span class="o">*</span><span class="n">effects</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">/</span><span class="mi">4</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">])</span>
-
-<span class="n">threeway_effects</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">quarter_fractional_doe</span> <span class="o">=</span> <span class="n">doe</span><span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span> <span class="n">doe</span><span class="p">[</span><span class="s1">&#39;x1-x2-x3-x4&#39;</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">,</span> <span class="n">doe</span><span class="p">[</span><span class="s1">&#39;x4-x5-x6&#39;</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span> <span class="p">)</span> <span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of experiments: </span><span class="si">%d</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">quarter_fractional_doe</span><span class="p">[</span><span class="n">column_labs</span><span class="p">])))</span>
+<span class="n">quarter_fractional_doe</span><span class="p">[</span><span class="n">column_labs</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
 </pre></div>
 
 </div>
@@ -12569,191 +12827,164 @@ $$
 <div class="output_wrapper">
 <div class="output">
 
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Number of experiments: 16
+</pre>
+</div>
+</div>
 
 <div class="output_area">
 <div class="prompt output_prompt">Out[10]:</div>
 
 
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{(&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;): -0.082019776207797324}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="analyzing_threewayinteractions"></a></p>
-<h2 id="Analysis-of-Three-Way-Effects">Analysis of Three-Way Effects<a class="anchor-link" href="#Analysis-of-Three-Way-Effects">&#182;</a></h2><p>While three-way interactions are relatively rare, typically smaller, and harder to interpret, a negative three-way interaction esssentially means that <em>increasing</em> these variables, all together, will lead to interactions which lower the response (the lifespan of the equipment) by -0.082, which is equivalent to decreasing the lifespan of the equipment by one cycle. However, this effect is very weak comapred to main and interaction effects.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="fitting_responsesurface"></a></p>
-<h1 id="Fitting-a-Polynomial-Response-Surface">Fitting a Polynomial Response Surface<a class="anchor-link" href="#Fitting-a-Polynomial-Response-Surface">&#182;</a></h1><p>While identifying general trends and the effects of different input variables on a system response is useful, it's more useful to have a mathematical model for the system. The factorial design we used is designed to get us coefficients for a linear model $\hat{y}$ that is a linear function of input variables $x_i$, and that predicts the actual system response $y$:</p>
-$$
-\hat{y} = a_0 + a_1 x_1 + a_2 x_2 + a_3 x_3 + a_{12} x_1 x_2 + a_{13} x_1 x_3 + a_{23} x_2 x_3 + a_{123} x_1 x_2 x_3 
-$$<p>To determine these coefficients, we can obtain the effects we computed above. When we computed effects, we defined them as measuring the difference in the system response that changing a variable from -1 to +1 would have. Because this quantifies the change per two units of x, and the coefficients of a polynomial quantify the change per one unit of x, the effect must be divided by two.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;yhat = &quot;</span>
-
-<span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">%0.3f</span><span class="s2"> &quot;</span><span class="o">%</span><span class="p">(</span><span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;logy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
-
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">main_effects</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">main_effects</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">):</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">%0.3f</span><span class="s2"> x</span><span class="si">%d</span><span class="s2"> &quot;</span><span class="o">%</span><span class="p">(</span> <span class="n">main_effects</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;+ </span><span class="si">%0.3f</span><span class="s2"> x</span><span class="si">%d</span><span class="s2"> &quot;</span><span class="o">%</span><span class="p">(</span> <span class="n">main_effects</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>yhat = 2.744 + 0.375 x1 -0.295 x2 -0.175 x3 
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Thus, the final result of the experimental design matrix and the 8 experiments that were run is the following polynomial for $\hat{y}$, which is a model for $y$, the system response:</p>
-$$
-\hat{y} = 2.744 - 0.295 x_1 - 0.175 x_2 + 0.375 x_3
-$$
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="uncertainty"></a></p>
-<h2 id="The-Impact-of-Uncertainty">The Impact of Uncertainty<a class="anchor-link" href="#The-Impact-of-Uncertainty">&#182;</a></h2><p>The main and interaction effects give us a <em>more</em> quantitative idea of what variables are important, yes. They can also be important for identifying where a model can be improved (if an input is linked strongly to a system response, more effort should be spent understanding the nature of the relationship).</p>
-<p>But there are still some practical considerations missing from the implementation above. Specifically, in the real world it is impossible to know the system repsonse, $y$, perfectly. Rather, we may measure the response with an instrument whose uncertainty has been quantified, or we may measure a quantity multiple times (or both). How do we determine the impact of that uncertainty on the model?</p>
-<p>Ultimately, factorial designs are based on the underlying assumption that the response $y$ is a linear function of the inputs $x_i$. Thus, for the three-factor full factorial experiment design, we are collecting data and running experiments in such a way that we obtain a model $\hat{y}$ for our system response $y$, and $\hat{y}$ is a linear function of each factor:</p>
-$$
-\hat{y} = a_0 + a_1 x_1 + a_2 x_2 + a_3 x_3
-$$
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>The experiment design allows us to obtain a value for each coefficient $a_0$, $a_1$, etc. that will fit $\hat{y}$ to $y$ to the best of its abilities.</p>
-<p><strong>Thus, uncertainty in the measured responses $y$ propagates into the linear model in the form of uncertainty in the coefficients $a_0$, $a_1$, etc.</strong></p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="uncertainty_example"></a></p>
-<h2 id="Uncertainty-Quantfication:-Factory-Example">Uncertainty Quantfication: Factory Example<a class="anchor-link" href="#Uncertainty-Quantfication:-Factory-Example">&#182;</a></h2><p>For example, suppose that we're dealing with a machine on a factory floor, and we're measuring the system response $y$, which is a machine failure. Now, how do we know if a machine has failed? Perhaps we can't see its internals, and it still makes noise. We might find out that a machine has failed by seeing it emit smoke. But sometimes, machines will emit smoke before they fail, while other times, machines will only smoke after they've failed. We don't know exactly how many life cycles the machines went through, but we can quantify what we know. We can measure the mean $\overline{y}$ and variance $\sigma^2$ in a controlled setting, so that when a machine starts smoking, we have a probability distribution assigning probabilities to different times of failure (i.e., there is a 5% chance it failed more than 1 hour ago).</p>
-<p>Once we obtain the variance, or $\sigma^2$, we can obtain the value of $\sigma$, which represents the distribution of uncertainty. Assuming 2 sigma is acceptable (covers 95% of cases), we can add or subtract $\sigma$ from the estimate of parameters.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="uncertainty_numbers"></a></p>
-<h2 id="Uncertainty-Numbers">Uncertainty Numbers<a class="anchor-link" href="#Uncertainty-Numbers">&#182;</a></h2><p>To obtain an estimate of the uncertainty, the experimentalist will typically make several measurements at the center point, that is, where all parameter levels are 0. The more samples are taken at this condition, the better characterized the distribution of uncertainty becomes. These center point samples can be used to construct a Gaussian probability distribution function, which yeilds a variance, $\sigma^2$ (or, to be proper, an estimate $s^2$ of the real variance $\sigma^2$). This parameter is key for quantifying uncertainty.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="uncertainty_measurements"></a></p>
-<h2 id="Using-Uncertainty-Measurements">Using Uncertainty Measurements<a class="anchor-link" href="#Using-Uncertainty-Measurements">&#182;</a></h2><p>Suppose we measure $s^2 = 0.0050$. Now what?</p>
-<p>Now we can obtain the variance of all measurements, and the variance in the effects that we computed above. These are computed via:</p>
-$$
-Var_{mean} = V(\overline{y}) = \dfrac{\sigma^2}{2^k} \\
-Var_{effect} = \dfrac{4 \sigma^2}{2^k}
-$$
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[14]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigmasquared</span> <span class="o">=</span> <span class="mf">0.0050</span>
-<span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
-<span class="n">Vmean</span> <span class="o">=</span> <span class="p">(</span><span class="n">sigmasquared</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">k</span><span class="p">)</span>
-<span class="n">Veffect</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">sigmasquared</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">k</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Variance in mean: </span><span class="si">%0.6f</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">Vmean</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Variance in effects: </span><span class="si">%0.6f</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">Veffect</span><span class="p">))</span>
-</pre></div>
-
-</div>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>1</th>
+      <th>2</th>
+      <th>12</th>
+      <th>15</th>
+      <th>20</th>
+      <th>23</th>
+      <th>25</th>
+      <th>26</th>
+      <th>36</th>
+      <th>39</th>
+      <th>41</th>
+      <th>42</th>
+      <th>49</th>
+      <th>50</th>
+      <th>60</th>
+      <th>63</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>x1</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x2</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x3</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x4</th>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x5</th>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>x6</th>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Variance in mean: 0.000625
-Variance in effects: 0.002500
-</pre>
-</div>
 </div>
 
 </div>
@@ -12765,146 +12996,17 @@ Variance in effects: 0.002500
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Alternatively, if the responses $y$ are actually averages of a given number $r$ of $y$-observations, $\overline{y}$, then the variance will shrink:</p>
+<p>With the quarter-fractional factorial design, what information do we lose? We know already which interaction effects are aliased with main effects:</p>
 $$
-Var_{mean} = \dfrac{\sigma^2}{r 2^k} \\
-Var_{effect} = \dfrac{4 \sigma^2}{r 2^k}
-$$<p>The variance gives us an estimate of sigma squared, and if we have sigma squared we can obtain sigma. Sigma is the quantity that represents the range of response values that captures 1 sigma, or 66%, of the probable values of $y$ with $\hat{y}$. Adding a plus or minus sigma means we are capturing 2 sigma, or 95%, of the probable values of $y$.</p>
-<p>Taking the square root of the variance gives $\sigma$:</p>
+x_4 x_5 x_6 = (+1) \\
+(x_4 x_5 x_6) x_1 = (+1) x_1 \\
+x_1 x_4 x_5 x_6 = x_1 \\
+x_2 x_4 x_5 x_6 = x_2 \\
+x_3 x_4 x_5 x_6 = x_3
+$$<p>We can use this information to design our experiments to cover particular interaction effects we know to be important, or ignore others we don't expect to be significant.</p>
 
 </div>
 </div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Vmean</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Veffect</span><span class="p">))</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>0.025
-0.05
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="uncertainty_accounting"></a></p>
-<h2 id="Accounting-for-Uncertainty-in-Model">Accounting for Uncertainty in Model<a class="anchor-link" href="#Accounting-for-Uncertainty-in-Model">&#182;</a></h2><p>Now we can convert the values of the effects, and the values of $\sigma$, to values for the final linear model:</p>
-$$
-\hat{y} = a_0 + a_1 x_1 + a_2 x_2 + a_3 x_3 + a_{12} x_1 x_2 + a_{13} x_1 x_3 + a_{23} x_2 x_3 + a_{123} x_1 x_2 x_3 
-$$<p>We begin with the case where each variable value is at its middle point (all non-constant terms are 0), and</p>
-$$
-\hat{y} = a_0
-$$<p>In this case, the standard error is $\pm \sigma$ as computed for the mean (or overall) system response,</p>
-$$
-\hat{y} = a_0 \pm \sigma_{mean}
-$$<p>where $\sigma_{mean} = \sqrt{Var(mean)}$.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">unc_a_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Vmean</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">unc_a_0</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>0.025
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>The final polynomial model for our system response prediction $\hat{y}$ therefore becomes:</p>
-$$
-\hat{y} = ( 2.744 \pm 0.025 ) - ( 0.295 \pm 0.025 ) x_1 - (0.175 \pm 0.025) x_2 + (0.375 \pm 0.025) x_3
-$$
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="discussion"></a></p>
-<h1 id="Discussion">Discussion<a class="anchor-link" href="#Discussion">&#182;</a></h1><p>At this point, we would usually dive deeper into the details of the actual problem of interest. By tying the empirical model to the system, we can draw conclusions about the physical system - for example, if we were analyzing a chemically reacting process, and we found the response to be particularly sensitive to temperature, it would indicate that the chemical reaction is sensitive to temperature, and that the reaction should be studied more deeply (in isolation from the more complicated system) to better understand the impact of temperature on the response.</p>
-<p>It's also valuable to explore the linear model that we obtained more deeply, by looking at contours of the response surface, taking first derivatives, and optimizing the input variable values to maximize or minimize the response value. We'll leave those tasks for later, and illustrate them in later notebooks.</p>
-<p>At this point we have accomplished the goal of illustrating the design, execution, and analysis of a two-level, three-factor full factorial experimental design, so we'll leave things at that.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a name="conclusion"></a></p>
-<h1 id="Conclusion">Conclusion<a class="anchor-link" href="#Conclusion">&#182;</a></h1><p>In this notebook, we've covered a 2-level, three-factor factorial design from start to finish, including incorporation of uncertainty information. The design of the experiment was made simple by using the <code>itertools</code> and <code>pandas</code> libraries, and we showed how to transform variables to have low and high levels, as well as demonstrating a system response transformation. The results were analyzed to obtain a linear polynomial model.</p>
-<p>However, this process was a bit cumbersome. What we'll see in later notebooks is that we can use Python modules designed for statistical modeling to fit linear models to data using least squares and regression, and carry the analysis further.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
-</pre></div>
-
-</div>
-</div>
-</div>
-
 </div>
     </div>
   </div>
